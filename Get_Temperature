@@ -1,0 +1,33 @@
+library(XML)
+library(RCurl)
+
+
+##generate the list of url
+url_list <- list()
+month <- c('01','02','03','04','05','06','07', '08', '09', '10', '11', '12')
+for (year in 2011:2013){
+    url <- paste('http://lishi.tianqi.com/taibei/',year,month,'.html',sep='')
+    url_list <- rbind(url_list,url)
+  }
+url_list <- unlist(url_list)
+
+##Get the table online
+myTemp <- function(url){
+            get_url = getURL(url,encoding = "UTF-8")
+            get_url_parse = htmlParse(get_url, encoding = "UTF-8")
+            tablehead <- xpathSApply(get_url_parse, "//div[@class='tqtongji2']/ul/li", xmlValue) 
+            table <- matrix(tablehead, ncol = 6, byrow = T)
+            return(table)
+          }
+
+Temp_Total <- lapply(url_list, myTemp)
+
+
+##Transform the data from list to matrix 
+temp <- matrix(ncol = 6)
+for (i in 1:36){
+  tmp <- Temp_Total[[i]]
+  test <- rbind(test,tmp)
+}
+
+write.csv(temp,file = "temp.csv" ,sep = ",", row.names = F)
